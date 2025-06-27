@@ -1,0 +1,1 @@
+import React from'react';function ContractorJobs(){return<div><h2>Contractor Jobs</h2></div>}export default ContractorJobs;

@@ -1,0 +1,1 @@
+import React from'react';function PostJob(){return<div><h2>Post Job</h2></div>}export default PostJob;
