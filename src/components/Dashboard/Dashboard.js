@@ -1,1 +1,0 @@
-import React,{useContext}from'react';import{AuthContext}from'../../context/AuthContext';function Dashboard(){const{user}=useContext(AuthContext);return<div><h2>Dashboard</h2><p>{user?`Welcome ${user.fullName}`:'Please login'}</p></div>}export default Dashboard;
