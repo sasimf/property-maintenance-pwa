@@ -1,90 +1,94 @@
 const API = process.env.REACT_APP_API_URL;
 
-export async function register(data) {
-  const res = await fetch(`${API}/api/users/register`, {
+// Generic wrapper for JSON endpoints
+async function request(path, options = {}) {
+  const res = await fetch(`${API}${path}`, {
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+    credentials: 'include',
+    ...options
+  });
+
+  const payload = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    const err = new Error(payload.error || res.statusText || 'API error');
+    err.status = res.status;
+    err.payload = payload;
+    throw err;
+  }
+
+  return payload;
+}
+
+export function register(data) {
+  return request('/api/users/register', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  return res.json();
 }
 
-export async function login(data) {
-  const res = await fetch(`${API}/api/users/login`, {
+export function login(data) {
+  return request('/api/users/login', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  return res.json();
 }
 
-export async function getJobs() {
-  const res = await fetch(`${API}/api/jobs`);
-  return res.json();
+export function getJobs() {
+  return request('/api/jobs');
 }
 
-export async function createJob(data) {
-  const res = await fetch(`${API}/api/jobs`, {
+export function createJob(formData) {
+  // formData is a FormData instance if you upload files
+  return request('/api/jobs', {
     method: 'POST',
-    body: data,
+    headers: {},           // Let fetch set multipart boundaries
+    body: formData,
   });
-  return res.json();
 }
 
-export async function subscribe(planType, planTier) {
-  const res = await fetch(`${API}/api/subscriptions`, {
+export function subscribe(planType, planTier) {
+  return request('/api/subscriptions', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ planType, planTier }),
   });
-  return res.json();
 }
 
-export async function getMessages(jobId) {
-  const res = await fetch(`${API}/api/messages/${jobId}`);
-  return res.json();
+export function getMessages(jobId) {
+  return request(`/api/messages/${jobId}`);
 }
 
-export async function sendMessage(jobId, message) {
-  const res = await fetch(`${API}/api/messages/${jobId}`, {
+export function sendMessage(jobId, message) {
+  return request(`/api/messages/${jobId}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message }),
   });
-  return res.json();
 }
 
-export async function createBooking(jobId, details) {
-  const res = await fetch(`${API}/api/bookings/${jobId}`, {
+export function createBooking(jobId, details) {
+  return request(`/api/bookings/${jobId}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(details),
   });
-  return res.json();
 }
 
-// Admin endpoints
-export async function getUsers() {
-  const res = await fetch(`${API}/api/admin/users`);
-  return res.json();
+// Admin
+export function getUsers() {
+  return request('/api/admin/users');
 }
 
-export async function getAllJobs() {
-  const res = await fetch(`${API}/api/admin/jobs`);
-  return res.json();
+export function getAllJobs() {
+  return request('/api/admin/jobs');
 }
 
-export async function getSubscriptions() {
-  const res = await fetch(`${API}/api/admin/subscriptions`);
-  return res.json();
+export function getSubscriptions() {
+  return request('/api/admin/subscriptions');
 }
 
-export async function getDisputes() {
-  const res = await fetch(`${API}/api/admin/disputes`);
-  return res.json();
+export function getDisputes() {
+  return request('/api/admin/disputes');
 }
 
-export async function getReviews() {
-  const res = await fetch(`${API}/api/admin/reviews`);
-  return res.json();
+export function getReviews() {
+  return request('/api/admin/reviews');
 }
