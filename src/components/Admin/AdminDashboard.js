@@ -1,0 +1,1 @@
+import React,{useEffect,useState}from'react';import{getUsers}from'../../services/api';function AdminDashboard(){const[a,sA]=useState([]);useEffect(()=>{getUsers().then(sA);},[]);return(<div><h2>Admin</h2>{a.map(u=>'<p>'+u.fullName+'</p>')}</div>);}export default AdminDashboard;

@@ -1,0 +1,1 @@
+import React from'react';function Subscription(){return<div><h2>Subscribe</h2></div>;}export default Subscription;

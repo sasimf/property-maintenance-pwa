@@ -1,0 +1,14 @@
+const API=process.env.REACT_APP_API_URL;
+export async function register(data){return fetch(`${API}/api/users/register`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}}).then(r=>r.json());}
+export async function login(data){return fetch(`${API}/api/users/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}}).then(r=>r.json());}
+export async function getJobs(){return fetch(`${API}/api/jobs`).then(r=>r.json());}
+export async function createJob(data){return fetch(`${API}/api/jobs`,{method:'POST',body:data}).then(r=>r.json());}
+export async function subscribe(pt,ptier){return fetch(`${API}/api/subscriptions`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({planType:pt,planTier:ptier})}}).then(r=>r.json());}
+export async function getMessages(jobId){return fetch(`${API}/api/messages/${jobId}`).then(r=>r.json());}
+export async function sendMessage(jobId,msg){return fetch(`${API}/api/messages/${jobId}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})}}).then(r=>r.json());}
+export async function createBooking(jobId,details){return fetch(`${API}/api/bookings/${jobId}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(details)})}.then(r=>r.json());}
+export async function getUsers(){return fetch(`${API}/api/admin/users`).then(r=>r.json());}
+export async function getAllJobs(){return fetch(`${API}/api/admin/jobs`).then(r=>r.json());}
+export async function getSubscriptions(){return fetch(`${API}/api/admin/subscriptions`).then(r=>r.json());}
+export async function getDisputes(){return fetch(`${API}/api/admin/disputes`).then(r=>r.json());}
+export async function getReviews(){return fetch(`${API}/api/admin/reviews`).then(r=>r.json());}

@@ -1,0 +1,1 @@
+import React,{useState}from'react';import{register}from'../../services/api';function Register(){const[f,sF]=useState({fullName:'',email:'',password:'',userType:'homeowner'});return(<form onSubmit={e=>{e.preventDefault();register(f);}}><h2>Register</h2></form>);}export default Register;
