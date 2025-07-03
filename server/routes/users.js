@@ -21,7 +21,15 @@ router.post('/login',async(req,res)=>{
   const ok=await bcrypt.compare(password,user.passwordHash);
   if(!ok) return res.status(400).json({error:'Invalid'});
   const token=jwt.sign({id:user._id},process.env.JWT_SECRET);
-  res.json({token,user:{fullName:user.fullName,email:user.email,userType:user.userType}});
+  // after
+res.json({
+  token,
+  user: {
+    id: user._id,                // ← include the Mongo ID
+    fullName: user.fullName,
+    email: user.email,
+    userType: user.userType
+  }
 });
 
 module.exports=router;
