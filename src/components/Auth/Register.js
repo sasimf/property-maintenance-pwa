@@ -14,6 +14,7 @@ export default function Register() {
     password: '',
   });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = e => {
@@ -23,18 +24,15 @@ export default function Register() {
   const handleSubmit = async e => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     try {
-      const payload = {
-        ...form,
-        expertise: form.expertise?.split(',').map(x => x.trim()) || [],
-      };
-      const res = await register(payload);
-      if (res.error) throw new Error(res.error);
-      // Registration successful → send user to login
+      await register(form);
       navigate('/login');
     } catch (err) {
-      setError(err.message || 'Registration failed');
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -42,67 +40,25 @@ export default function Register() {
     <form onSubmit={handleSubmit}>
       <h2>Register</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
+      <input name="fullName" placeholder="Full Name" onChange={handleChange} required />
+      <input name="companyName" placeholder="Company (optional)" onChange={handleChange} />
+      <input name="address" placeholder="Address" onChange={handleChange} required />
+      <input name="postcode" placeholder="Postcode" onChange={handleChange} required />
+      <input name="phone" placeholder="Phone" onChange={handleChange} required />
 
-      <input
-        name="fullName"
-        placeholder="Full Name"
-        value={form.fullName}
-        onChange={handleChange}
-        required
-      />
-      <input
-        name="companyName"
-        placeholder="Company Name (optional)"
-        value={form.companyName}
-        onChange={handleChange}
-      />
-      <input
-        name="address"
-        placeholder="Address"
-        value={form.address}
-        onChange={handleChange}
-        required
-      />
-      <input
-        name="postcode"
-        placeholder="Postcode"
-        value={form.postcode}
-        onChange={handleChange}
-        required
-      />
-      <input
-        name="phone"
-        placeholder="Mobile or Telephone"
-        value={form.phone}
-        onChange={handleChange}
-        required
-      />
-
-      <select name="userType" value={form.userType} onChange={handleChange}>
+      <select name="userType" onChange={handleChange} value={form.userType}>
         <option value="homeowner">Homeowner (Free)</option>
         <option value="landlord">Landlord (Free)</option>
-        <option value="agent">Letting Agent (Subscription)</option>
-        <option value="contractor">Contractor (Subscription)</option>
+        <option value="agent">Letting Agent (Paid)</option>
+        <option value="contractor">Contractor (Paid)</option>
       </select>
 
-      <input
-        type="email"
-        name="email"
-        placeholder="Email"
-        value={form.email}
-        onChange={handleChange}
-        required
-      />
-      <input
-        type="password"
-        name="password"
-        placeholder="Password"
-        value={form.password}
-        onChange={handleChange}
-        required
-      />
+      <input type="email" name="email" placeholder="Email" onChange={handleChange} required />
+      <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
 
-      <button type="submit">Register</button>
+      <button type="submit" disabled={loading}>
+        {loading ? 'Signing Up…' : 'Sign Up'}
+      </button>
     </form>
   );
 }
