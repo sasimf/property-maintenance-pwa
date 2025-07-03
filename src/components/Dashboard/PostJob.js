@@ -36,7 +36,7 @@ export default function PostJob() {
     try {
       const data = new FormData();
       Object.entries(form).forEach(([k,v]) => data.append(k, v));
-      data.append('poster', user.id);
+      data.append('poster', user._id);
       media.forEach(file => data.append('media', file));
 
       await createJob(data);
