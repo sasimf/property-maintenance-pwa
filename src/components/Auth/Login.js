@@ -4,26 +4,30 @@ import { AuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
-  const [credentials, setCredentials] = useState({ email: '', password: '' });
+  const [creds, setCreds] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { setUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleChange = e => {
-    setCredentials(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setCreds(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async e => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     try {
-      const user = await login(credentials);
-      if (user.error) throw new Error(user.error);
+      const { user, token } = await login(creds);
+      // store token if needed: localStorage.setItem('token', token);
       setUser(user);
-      navigate('/'); // Go to dashboard
+      navigate('/');
     } catch (err) {
-      setError(err.message || 'Login failed');
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -31,25 +35,11 @@ export default function Login() {
     <form onSubmit={handleSubmit}>
       <h2>Login</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      <input
-        type="email"
-        name="email"
-        placeholder="Email"
-        value={credentials.email}
-        onChange={handleChange}
-        required
-      />
-      <input
-        type="password"
-        name="password"
-        placeholder="Password"
-        value={credentials.password}
-        onChange={handleChange}
-        required
-      />
-
-      <button type="submit">Login</button>
+      <input type="email" name="email" placeholder="Email" onChange={handleChange} required />
+      <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
+      <button type="submit" disabled={loading}>
+        {loading ? 'Logging In…' : 'Log In'}
+      </button>
     </form>
   );
 }
