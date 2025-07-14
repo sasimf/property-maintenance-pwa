@@ -1,10 +1,18 @@
 import React, { useState, useContext } from 'react';
 import { createJob } from '../../services/api';
 import { AuthContext } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 
 export default function PostJob() {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  // If no user is logged in, redirect to login
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Form state
   const [form, setForm] = useState({
     tenantName: '',
     tenantPhone: '',
@@ -15,31 +23,42 @@ export default function PostJob() {
     address: '',
     postcode: '',
   });
-  const [media, setMedia] = useState([]);
-  const [error, setError] = useState('');
+  const [media, setMedia] = useState([]);      // For file uploads
+  const [error, setError] = useState('');      // Error message
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
+  // Handle text/select inputs
   const handleChange = e => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  // Handle file inputs
   const handleFiles = e => {
     setMedia(Array.from(e.target.files));
   };
 
+  // Submit handler
   const handleSubmit = async e => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
+      // Build FormData to send both JSON fields and files
       const data = new FormData();
-      Object.entries(form).forEach(([k,v]) => data.append(k, v));
+      Object.entries(form).forEach(([key, value]) => {
+        if (value) data.append(key, value);
+      });
+      // Attach the logged-in user’s ID as poster
       data.append('poster', user.id);
+
+      // Attach each file
       media.forEach(file => data.append('media', file));
 
+      // Call the API
       await createJob(data);
+
+      // On success, go back to dashboard
       navigate('/');
     } catch (err) {
       setError(err.message);
@@ -48,26 +67,56 @@ export default function PostJob() {
     }
   };
 
-  const categories = ['Plumbing','Electrical','Heating','Miscellaneous'];
+  const categories = ['Plumbing', 'Electrical', 'Heating', 'Miscellaneous'];
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2>Post a Job</h2>
+      <h2>Post a Maintenance Job</h2>
+
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
-      <input name="tenantName" placeholder="Tenant Name" onChange={handleChange} required />
-      <input name="tenantPhone" placeholder="Tenant Phone" onChange={handleChange} required />
+      <input
+        name="tenantName"
+        placeholder="Tenant Name"
+        value={form.tenantName}
+        onChange={handleChange}
+        required
+      />
+      <input
+        name="tenantPhone"
+        placeholder="Tenant Phone"
+        value={form.tenantPhone}
+        onChange={handleChange}
+        required
+      />
 
-      <select name="category" onChange={handleChange} required>
-        <option value="">--Select Category--</option>
-        {categories.map(c => <option key={c} value={c}>{c}</option>)}
+      <select
+        name="category"
+        value={form.category}
+        onChange={handleChange}
+        required
+      >
+        <option value="">-- Select Category --</option>
+        {categories.map(c => (
+          <option key={c} value={c}>{c}</option>
+        ))}
       </select>
 
-      <textarea name="description" placeholder="Description" onChange={handleChange} required />
+      <textarea
+        name="description"
+        placeholder="Job Description"
+        value={form.description}
+        onChange={handleChange}
+        required
+      />
 
       <label>
         Urgency:
-        <select name="urgency" onChange={handleChange}>
+        <select
+          name="urgency"
+          value={form.urgency}
+          onChange={handleChange}
+        >
           <option value="Immediate">Immediate</option>
           <option value="Scheduled">Scheduled</option>
         </select>
@@ -77,16 +126,33 @@ export default function PostJob() {
         <input
           type="datetime-local"
           name="scheduledFor"
+          value={form.scheduledFor}
           onChange={handleChange}
         />
       )}
 
-      <input name="address" placeholder="Job Address" onChange={handleChange} required />
-      <input name="postcode" placeholder="Postcode" onChange={handleChange} required />
+      <input
+        name="address"
+        placeholder="Job Address"
+        value={form.address}
+        onChange={handleChange}
+        required
+      />
+      <input
+        name="postcode"
+        placeholder="Postcode"
+        value={form.postcode}
+        onChange={handleChange}
+        required
+      />
 
       <label>
-        Upload Photos/Videos
-        <input type="file" multiple onChange={handleFiles} />
+        Upload Photos/Videos:
+        <input
+          type="file"
+          multiple
+          onChange={handleFiles}
+        />
       </label>
 
       <button type="submit" disabled={loading}>
