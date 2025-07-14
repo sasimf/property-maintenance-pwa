@@ -1,12 +1,10 @@
-// server/routes/jobs.js
-
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const Job = require('../models/Job');
 
 const router = express.Router();
 
-// POST /api/jobs
-// Expects JSON with all fields plus an optional `media` array
 router.post('/', async (req, res) => {
   try {
     const {
@@ -22,10 +20,24 @@ router.post('/', async (req, res) => {
       postcode,
     } = req.body;
 
-    // Basic validation
     if (!poster || !tenantName || !tenantPhone || !category || !address || !postcode) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
+
+    // Ensure uploads folder exists
+    const uploadsDir = path.join(__dirname, '../uploads');
+    if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
+
+    // Process Base64 media
+    const savedFiles = media.map((dataUrl, idx) => {
+      // dataUrl format: "data:image/png;base64,AAA..."
+      const [meta, base64] = dataUrl.split(',');
+      const ext = meta.match(/data:image\/(.*?);/)[1] || 'png';
+      const filename = `job_${Date.now()}_${idx}.${ext}`;
+      const filepath = path.join(uploadsDir, filename);
+      fs.writeFileSync(filepath, Buffer.from(base64, 'base64'));
+      return `/uploads/${filename}`;
+    });
 
     const job = new Job({
       poster,
@@ -33,7 +45,7 @@ router.post('/', async (req, res) => {
       tenantPhone,
       category,
       description,
-      media,               // now just an array of strings
+      media: savedFiles,
       urgency,
       scheduledFor: scheduledFor || undefined,
       address,
@@ -48,7 +60,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET /api/jobs
 router.get('/', async (req, res) => {
   try {
     const jobs = await Job.find().sort({ createdAt: -1 });
