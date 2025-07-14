@@ -23,18 +23,15 @@ export default function PostJob() {
     address: '',
     postcode: '',
   });
-  const [media, setMedia] = useState([]);      // For file uploads
-  const [error, setError] = useState('');      // Error message
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   // Handle text/select inputs
   const handleChange = e => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  // Handle file inputs
-  const handleFiles = e => {
-    setMedia(Array.from(e.target.files));
+    setForm(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   // Submit handler
@@ -44,21 +41,12 @@ export default function PostJob() {
     setLoading(true);
 
     try {
-      // Build FormData to send both JSON fields and files
-      const data = new FormData();
-      Object.entries(form).forEach(([key, value]) => {
-        if (value) data.append(key, value);
+      // Send JSON; media empty for now
+      await createJob({
+        ...form,
+        poster: user.id,
+        media: []
       });
-      // Attach the logged-in user’s ID as poster
-      data.append('poster', user.id);
-
-      // Attach each file
-      media.forEach(file => data.append('media', file));
-
-      // Call the API
-      await createJob(data);
-
-      // On success, go back to dashboard
       navigate('/');
     } catch (err) {
       setError(err.message);
@@ -82,6 +70,7 @@ export default function PostJob() {
         onChange={handleChange}
         required
       />
+
       <input
         name="tenantPhone"
         placeholder="Tenant Phone"
@@ -138,6 +127,7 @@ export default function PostJob() {
         onChange={handleChange}
         required
       />
+
       <input
         name="postcode"
         placeholder="Postcode"
@@ -145,15 +135,6 @@ export default function PostJob() {
         onChange={handleChange}
         required
       />
-
-      <label>
-        Upload Photos/Videos:
-        <input
-          type="file"
-          multiple
-          onChange={handleFiles}
-        />
-      </label>
 
       <button type="submit" disabled={loading}>
         {loading ? 'Posting…' : 'Post Job'}
