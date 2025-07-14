@@ -1,6 +1,6 @@
 const API = process.env.REACT_APP_API_URL;
 
-// Generic wrapper for JSON endpoints
+// Generic wrapper for API requests
 async function request(path, options = {}) {
   const res = await fetch(`${API}${path}`, {
     headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
@@ -8,18 +8,19 @@ async function request(path, options = {}) {
     ...options
   });
 
-  const payload = await res.json().catch(() => ({}));
+  const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    const err = new Error(payload.error || res.statusText || 'API error');
+    const err = new Error(data.error || res.statusText || 'API error');
     err.status = res.status;
-    err.payload = payload;
+    err.payload = data;
     throw err;
   }
 
-  return payload;
+  return data;
 }
 
+// Auth
 export function register(data) {
   return request('/api/users/register', {
     method: 'POST',
@@ -34,19 +35,19 @@ export function login(data) {
   });
 }
 
+// Jobs
 export function getJobs() {
   return request('/api/jobs');
 }
 
-export function createJob(data) {
-  // data is now a plain object, not FormData
+export function createJob(jobData) {
   return request('/api/jobs', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify(jobData),
   });
 }
 
-
+// Subscriptions
 export function subscribe(planType, planTier) {
   return request('/api/subscriptions', {
     method: 'POST',
@@ -54,6 +55,7 @@ export function subscribe(planType, planTier) {
   });
 }
 
+// Messaging
 export function getMessages(jobId) {
   return request(`/api/messages/${jobId}`);
 }
@@ -65,6 +67,7 @@ export function sendMessage(jobId, message) {
   });
 }
 
+// Booking
 export function createBooking(jobId, details) {
   return request(`/api/bookings/${jobId}`, {
     method: 'POST',
@@ -72,7 +75,7 @@ export function createBooking(jobId, details) {
   });
 }
 
-// Admin
+// Admin Endpoints
 export function getUsers() {
   return request('/api/admin/users');
 }
