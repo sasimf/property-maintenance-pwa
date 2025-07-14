@@ -1,17 +1,13 @@
 // server/routes/jobs.js
 
 const express = require('express');
-const multer = require('multer');
 const Job = require('../models/Job');
 
 const router = express.Router();
 
-// Configure multer to store uploads in /uploads
-const upload = multer({ dest: 'uploads/' });
-
 // POST /api/jobs
-// Expects FormData with fields + files under key "media"
-router.post('/', upload.array('media', 10), async (req, res) => {
+// Expects JSON with all fields plus an optional `media` array
+router.post('/', async (req, res) => {
   try {
     const {
       poster,
@@ -19,20 +15,25 @@ router.post('/', upload.array('media', 10), async (req, res) => {
       tenantPhone,
       category,
       description,
+      media = [],
       urgency,
       scheduledFor,
       address,
       postcode,
     } = req.body;
 
-    // Build job object
+    // Basic validation
+    if (!poster || !tenantName || !tenantPhone || !category || !address || !postcode) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
     const job = new Job({
       poster,
       tenantName,
       tenantPhone,
       category,
       description,
-      media: req.files.map(f => f.path),  // store file paths
+      media,               // now just an array of strings
       urgency,
       scheduledFor: scheduledFor || undefined,
       address,
@@ -43,9 +44,7 @@ router.post('/', upload.array('media', 10), async (req, res) => {
     return res.json(job);
   } catch (err) {
     console.error('Create job error:', err);
-    return res
-      .status(500)
-      .json({ error: 'Server error during job creation' });
+    return res.status(500).json({ error: 'Server error during job creation' });
   }
 });
 
@@ -56,9 +55,7 @@ router.get('/', async (req, res) => {
     return res.json(jobs);
   } catch (err) {
     console.error('Fetch jobs error:', err);
-    return res
-      .status(500)
-      .json({ error: 'Server error fetching jobs' });
+    return res.status(500).json({ error: 'Server error fetching jobs' });
   }
 });
 
