@@ -7,12 +7,10 @@ export default function PostJob() {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // If no user is logged in, redirect to login
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  // Form state
   const [form, setForm] = useState({
     tenantName: '',
     tenantPhone: '',
@@ -22,11 +20,13 @@ export default function PostJob() {
     scheduledFor: '',
     address: '',
     postcode: '',
+    media: [],             // Array of Base64 strings
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Handle text/select inputs
+  const categories = ['Plumbing', 'Electrical', 'Heating', 'Miscellaneous'];
+
   const handleChange = e => {
     setForm(prev => ({
       ...prev,
@@ -34,18 +34,30 @@ export default function PostJob() {
     }));
   };
 
-  // Submit handler
+  // Read selected files as Base64 and store in form.media
+  const handleFiles = e => {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setForm(prev => ({
+          ...prev,
+          media: [...prev.media, reader.result],
+        }));
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleSubmit = async e => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      // Send JSON; media empty for now
       await createJob({
         ...form,
         poster: user.id,
-        media: []
       });
       navigate('/');
     } catch (err) {
@@ -55,12 +67,9 @@ export default function PostJob() {
     }
   };
 
-  const categories = ['Plumbing', 'Electrical', 'Heating', 'Miscellaneous'];
-
   return (
     <form onSubmit={handleSubmit}>
       <h2>Post a Maintenance Job</h2>
-
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
       <input
@@ -135,6 +144,16 @@ export default function PostJob() {
         onChange={handleChange}
         required
       />
+
+      <label>
+        Upload Photos/Videos:
+        <input
+          type="file"
+          multiple
+          accept="image/*,video/*"
+          onChange={handleFiles}
+        />
+      </label>
 
       <button type="submit" disabled={loading}>
         {loading ? 'Posting…' : 'Post Job'}
