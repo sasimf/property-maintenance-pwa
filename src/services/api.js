@@ -38,14 +38,14 @@ export function getJobs() {
   return request('/api/jobs');
 }
 
-export function createJob(formData) {
-  // formData is a FormData instance if you upload files
+export function createJob(data) {
+  // data is now a plain object, not FormData
   return request('/api/jobs', {
     method: 'POST',
-    headers: {},           // Let fetch set multipart boundaries
-    body: formData,
+    body: JSON.stringify(data),
   });
 }
+
 
 export function subscribe(planType, planTier) {
   return request('/api/subscriptions', {
