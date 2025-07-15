@@ -7,10 +7,23 @@ const path = require('path');
 const app = express();
 
 // CORS configuration to allow front-end origins
-app.use(require('cors')({
-  origin: '*',            // <-- allow any origin
+const cors = require('cors');
+
+const allowed = [
+  'https://property-maintenance-pwa.vercel.app',
+  'https://property-maintenance-pwa-2lng.vercel.app'
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // allow requests with no origin (e.g. mobile apps, curl)
+    if (!origin) return callback(null, true);
+    if (allowed.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS policy: origin ${origin} not allowed`));
+  },
   credentials: true
 }));
+
 
 // Increase JSON payload limit to handle Base64 media uploads
 app.use(express.json({ limit: '10mb' }));
