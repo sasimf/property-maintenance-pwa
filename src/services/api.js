@@ -59,7 +59,7 @@ export function getMessages(jobId) {
   return request(`/api/messages/${jobId}`);
 }
 
-// Only one sendMessage declaration:
+// **Only one sendMessage declaration**:
 export function sendMessage(jobId, message, sender) {
   return request(`/api/messages/${jobId}`, {
     method: 'POST',
