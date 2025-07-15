@@ -56,10 +56,12 @@ export function subscribe(planType, planTier) {
 }
 
 // Messaging
-export function getMessages(jobId) {
-  return request(`/api/messages/${jobId}`);
+export async function sendMessage(jobId, message, sender) {
+  return request(`/api/messages/${jobId}`, {
+    method: 'POST',
+    body: JSON.stringify({ message, sender }),
+  });
 }
-
 export function sendMessage(jobId, message) {
   return request(`/api/messages/${jobId}`, {
     method: 'POST',
