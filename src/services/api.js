@@ -1,23 +1,21 @@
+// src/services/api.js
+
 const API = process.env.REACT_APP_API_URL;
 
-// Generic wrapper for API requests
+// Generic wrapper to handle JSON requests & errors
 async function request(path, options = {}) {
   const res = await fetch(`${API}${path}`, {
     headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
     credentials: 'include',
     ...options
   });
-
-  const data = await res.json().catch(() => ({}));
-
+  const payload = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const err = new Error(data.error || res.statusText || 'API error');
-    err.status = res.status;
-    err.payload = data;
+    const err = new Error(payload.error || 'API error');
+    err.payload = payload;
     throw err;
   }
-
-  return data;
+  return payload;
 }
 
 // Auth
@@ -40,10 +38,11 @@ export function getJobs() {
   return request('/api/jobs');
 }
 
-export function createJob(jobData) {
+export function createJob(data) {
+  // data is a plain object (including media array)
   return request('/api/jobs', {
     method: 'POST',
-    body: JSON.stringify(jobData),
+    body: JSON.stringify(data),
   });
 }
 
@@ -56,20 +55,19 @@ export function subscribe(planType, planTier) {
 }
 
 // Messaging
-export async function sendMessage(jobId, message, sender) {
+export function getMessages(jobId) {
+  return request(`/api/messages/${jobId}`);
+}
+
+// Only one sendMessage declaration:
+export function sendMessage(jobId, message, sender) {
   return request(`/api/messages/${jobId}`, {
     method: 'POST',
     body: JSON.stringify({ message, sender }),
   });
 }
-export function sendMessage(jobId, message) {
-  return request(`/api/messages/${jobId}`, {
-    method: 'POST',
-    body: JSON.stringify({ message }),
-  });
-}
 
-// Booking
+// Bookings
 export function createBooking(jobId, details) {
   return request(`/api/bookings/${jobId}`, {
     method: 'POST',
@@ -77,7 +75,7 @@ export function createBooking(jobId, details) {
   });
 }
 
-// Admin Endpoints
+// Admin
 export function getUsers() {
   return request('/api/admin/users');
 }
