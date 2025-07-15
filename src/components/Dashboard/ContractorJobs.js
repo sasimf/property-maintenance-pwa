@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { getJobs } from '../../services/api';
 
 export default function ContractorJobs() {
@@ -32,6 +33,10 @@ export default function ContractorJobs() {
                   style={{ width: 100, height: 100, objectFit: 'cover', borderRadius: 4 }}
                 />
               ))}
+            </div>
+            {/* Messages Link: uses the actual job._id */}
+            <div style={{ marginTop: '0.5rem' }}>
+              <Link to={`/messages/${job._id}`}>💬 Messages</Link>
             </div>
           </li>
         ))}
