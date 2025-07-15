@@ -7,11 +7,8 @@ const path = require('path');
 const app = express();
 
 // CORS configuration to allow front-end origins
-app.use(cors({
-  origin: [
-    'https://property-maintenance-pwa.vercel.app',
-    'https://property-maintenance-pwa-2lng.vercel.app'
-  ],
+app.use(require('cors')({
+  origin: '*',            // <-- allow any origin
   credentials: true
 }));
 
