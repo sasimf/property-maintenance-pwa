@@ -54,20 +54,21 @@ router.post('/', async (req, res) => {
 
     await job.save();
     return res.json(job);
-  } catch (err) {
-    console.error('Create job error:', err);
-    return res.status(500).json({ error: 'Server error during job creation' });
-  }
-});
+--- a/server/routes/jobs.js
++++ b/server/routes/jobs.js
+@@ router.post('/', async (req, res) => {
+-  } catch (err) {
+-    console.error('Create job error:', err);
+-    return res.status(500).json({ error: 'Server error during job creation' });
+-  }
++  } catch (err) {
++    console.error('Create job error:', err);
++    // Return actual error message & stack for debugging (remove stack in prod)
++    return res.status(500).json({
++      error: err.message || 'Server error during job creation',
++      stack: err.stack
++    });
++  }
 
-router.get('/', async (req, res) => {
-  try {
-    const jobs = await Job.find().sort({ createdAt: -1 });
-    return res.json(jobs);
-  } catch (err) {
-    console.error('Fetch jobs error:', err);
-    return res.status(500).json({ error: 'Server error fetching jobs' });
-  }
-});
 
 module.exports = router;
