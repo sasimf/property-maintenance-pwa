@@ -5,6 +5,8 @@ const Job = require('../models/Job');
 
 const router = express.Router();
 
+// POST /api/jobs
+// Expects JSON with fields plus optional Base64 media array
 router.post('/', async (req, res) => {
   try {
     const {
@@ -20,19 +22,22 @@ router.post('/', async (req, res) => {
       postcode,
     } = req.body;
 
+    // Validate required fields
     if (!poster || !tenantName || !tenantPhone || !category || !address || !postcode) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Ensure uploads folder exists
+    // Ensure uploads directory exists
     const uploadsDir = path.join(__dirname, '../uploads');
-    if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir);
+    }
 
-    // Process Base64 media
+    // Process Base64 media into files
     const savedFiles = media.map((dataUrl, idx) => {
-      // dataUrl format: "data:image/png;base64,AAA..."
       const [meta, base64] = dataUrl.split(',');
-      const ext = meta.match(/data:image\/(.*?);/)[1] || 'png';
+      const match = meta.match(/data:(image|video)\/(.*?);/);
+      const ext = match ? match[2] : 'png';
       const filename = `job_${Date.now()}_${idx}.${ext}`;
       const filepath = path.join(uploadsDir, filename);
       fs.writeFileSync(filepath, Buffer.from(base64, 'base64'));
@@ -54,21 +59,21 @@ router.post('/', async (req, res) => {
 
     await job.save();
     return res.json(job);
---- a/server/routes/jobs.js
-+++ b/server/routes/jobs.js
-@@ router.post('/', async (req, res) => {
--  } catch (err) {
--    console.error('Create job error:', err);
--    return res.status(500).json({ error: 'Server error during job creation' });
--  }
-+  } catch (err) {
-+    console.error('Create job error:', err);
-+    // Return actual error message & stack for debugging (remove stack in prod)
-+    return res.status(500).json({
-+      error: err.message || 'Server error during job creation',
-+      stack: err.stack
-+    });
-+  }
+  } catch (err) {
+    console.error('Create job error:', err);
+    return res.status(500).json({ error: err.message, stack: err.stack });
+  }
+});
 
+// GET /api/jobs
+router.get('/', async (req, res) => {
+  try {
+    const jobs = await Job.find().sort({ createdAt: -1 });
+    return res.json(jobs);
+  } catch (err) {
+    console.error('Fetch jobs error:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;
