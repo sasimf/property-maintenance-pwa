@@ -37,6 +37,8 @@ mongoose.connect(process.env.MONGODB_URI, {
 app.use('/api/users',     require('./routes/users'));
 app.use('/api/jobs',      require('./routes/jobs'));
 app.use('/api/messages',  require('./routes/messages'));
++app.use('/api/payments', require('./routes/payments'));
+
 // … any other routes …
 
 // Health check
