@@ -74,7 +74,13 @@ export function createBooking(jobId, details) {
     body: JSON.stringify(details),
   });
 }
-
+// Payement:
+export function payCallOutCharge(jobId, amount) {
+  return request('/api/payments/callout', {
+    method: 'POST',
+    body: JSON.stringify({ jobId, amount }),
+  });
+}
 // Admin
 export function getUsers() {
   return request('/api/admin/users');
