@@ -1,10 +1,10 @@
 // server/server.js
 
 require('dotenv').config();
-const express = require('express');
-const cors    = require('cors');          // ← only one import
-const mongoose= require('mongoose');
-const path    = require('path');
+const express  = require('express');
+const cors     = require('cors');
+const mongoose = require('mongoose');
+const path     = require('path');
 
 const app = express();
 
@@ -15,6 +15,7 @@ const allowedOrigins = [
 ];
 app.use(cors({
   origin: (origin, callback) => {
+    // allow requests with no origin (e.g. curl, mobile apps)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
     callback(new Error(`CORS policy: origin ${origin} not allowed`));
@@ -37,9 +38,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 app.use('/api/users',     require('./routes/users'));
 app.use('/api/jobs',      require('./routes/jobs'));
 app.use('/api/messages',  require('./routes/messages'));
-+app.use('/api/payments', require('./routes/payments'));
-
-// … any other routes …
+app.use('/api/payments',  require('./routes/payments')); // payments route
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
