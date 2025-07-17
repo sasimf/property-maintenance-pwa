@@ -28,7 +28,7 @@ export async function getJobs() {
 export async function createJob(data) {
   const res = await fetch(`${API}/api/jobs`, {
     method: 'POST',
-    body: data, // FormData with media fields
+    body: data, // FormData including media
   });
   return res.json();
 }
@@ -67,6 +67,8 @@ export async function createBooking(jobId, contractorId, callOutAmount) {
   });
   return res.json();
 }
+// Alias to match your component import
+export { createBooking as payCallOutCharge };
 
 // Admin Endpoints
 export async function getUsers() {
