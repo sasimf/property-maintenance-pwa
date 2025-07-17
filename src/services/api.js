@@ -1,122 +1,118 @@
 // src/services/api.js
 
-// Make sure you have in your project root:
-//   .env
-//   REACT_APP_API_URL=https://property-maintenance-pwa.onrender.com
+// Base URL of your backend (set via .env or Vercel/Render env‐vars)
+const API = process.env.REACT_APP_API_URL
 
-const API = process.env.REACT_APP_API_URL;
-
-// Helper to parse JSON and throw on HTTP errors
+// Helper: parse JSON, throw on non‑2xx
 async function handleResponse(res, defaultError) {
-  let body;
+  let body
   try {
-    body = await res.json();
+    body = await res.json()
   } catch {
-    // invalid JSON (e.g. HTML error page)
-    throw new Error('Invalid JSON response from server');
+    throw new Error('Invalid JSON response from server')
   }
   if (!res.ok) {
-    throw new Error(body.error || defaultError || `HTTP ${res.status}`);
+    // your server uses `{ error: '...' }`
+    throw new Error(body.error || defaultError || `HTTP ${res.status}`)
   }
-  return body;
+  return body
 }
 
 export async function register(data) {
   const res = await fetch(`${API}/api/users/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  return handleResponse(res, 'Registration failed');
+    method:   'POST',
+    headers:  { 'Content-Type': 'application/json' },
+    body:     JSON.stringify(data),
+  })
+  return handleResponse(res, 'Registration failed')
 }
 
 export async function login(data) {
-  const res = await fetch(
-  "https://property‑maintenance‑pwa.onrender.com/api/users/login",
-  {
-    method: "POST",
-    headers: { "Content‑Type": "application/json" },
-    body: JSON.stringify(data),
-  }
-);
+  const res = await fetch(`${API}/api/users/login`, {
+    method:   'POST',
+    headers:  { 'Content-Type': 'application/json' },
+    body:     JSON.stringify(data),
+  })
+  return handleResponse(res, 'Login failed')
+}
 
 export async function getJobs() {
-  const res = await fetch(`${API}/api/jobs`);
-  return handleResponse(res, 'Could not fetch jobs');
+  const res = await fetch(`${API}/api/jobs`)
+  return handleResponse(res, 'Could not fetch jobs')
 }
 
 export async function createJob(formData) {
-  // formData should be a FormData instance containing media/files + other fields
+  // formData is a FormData instance (media + other fields)
   const res = await fetch(`${API}/api/jobs`, {
     method: 'POST',
-    body: formData,
-  });
-  return handleResponse(res, 'Job creation failed');
+    body:   formData,
+  })
+  return handleResponse(res, 'Job creation failed')
 }
 
 export async function subscribe(planType, planTier) {
   const res = await fetch(`${API}/api/subscriptions`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ planType, planTier }),
-  });
-  return handleResponse(res, 'Subscription failed');
+    method:   'POST',
+    headers:  { 'Content-Type': 'application/json' },
+    body:     JSON.stringify({ planType, planTier }),
+  })
+  return handleResponse(res, 'Subscription failed')
 }
 
 export async function getMessages(jobId) {
-  const res = await fetch(`${API}/api/messages/${jobId}`);
-  return handleResponse(res, 'Could not fetch messages');
+  const res = await fetch(`${API}/api/messages/${jobId}`)
+  return handleResponse(res, 'Could not fetch messages')
 }
 
 export async function sendMessage(jobId, message) {
   const res = await fetch(`${API}/api/messages/${jobId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message }),
-  });
-  return handleResponse(res, 'Message send failed');
+    method:   'POST',
+    headers:  { 'Content-Type': 'application/json' },
+    body:     JSON.stringify({ message }),
+  })
+  return handleResponse(res, 'Message send failed')
 }
 
 export async function createBooking(jobId, details) {
   const res = await fetch(`${API}/api/bookings/${jobId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(details),
-  });
-  return handleResponse(res, 'Booking failed');
+    method:   'POST',
+    headers:  { 'Content-Type': 'application/json' },
+    body:     JSON.stringify(details),
+  })
+  return handleResponse(res, 'Booking failed')
 }
 
 export async function payCallOutCharge(jobId) {
   const res = await fetch(`${API}/api/payments/callout/${jobId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-  });
-  return handleResponse(res, 'Payment of call‑out charge failed');
+    method:   'POST',
+    headers:  { 'Content-Type': 'application/json' },
+  })
+  return handleResponse(res, 'Payment of call‑out charge failed')
 }
 
 // ---- Admin endpoints ----
 
 export async function getUsers() {
-  const res = await fetch(`${API}/api/admin/users`);
-  return handleResponse(res, 'Could not fetch users');
+  const res = await fetch(`${API}/api/admin/users`)
+  return handleResponse(res, 'Could not fetch users')
 }
 
 export async function getAllJobs() {
-  const res = await fetch(`${API}/api/admin/jobs`);
-  return handleResponse(res, 'Could not fetch all jobs');
+  const res = await fetch(`${API}/api/admin/jobs`)
+  return handleResponse(res, 'Could not fetch all jobs')
 }
 
 export async function getSubscriptions() {
-  const res = await fetch(`${API}/api/admin/subscriptions`);
-  return handleResponse(res, 'Could not fetch subscriptions');
+  const res = await fetch(`${API}/api/admin/subscriptions`)
+  return handleResponse(res, 'Could not fetch subscriptions')
 }
 
 export async function getDisputes() {
-  const res = await fetch(`${API}/api/admin/disputes`);
-  return handleResponse(res, 'Could not fetch disputes');
+  const res = await fetch(`${API}/api/admin/disputes`)
+  return handleResponse(res, 'Could not fetch disputes')
 }
 
 export async function getReviews() {
-  const res = await fetch(`${API}/api/admin/reviews`);
-  return handleResponse(res, 'Could not fetch reviews');
+  const res = await fetch(`${API}/api/admin/reviews`)
+  return handleResponse(res, 'Could not fetch reviews')
 }
