@@ -1,19 +1,24 @@
 // src/services/api.js
 
+// Make sure you have in your project root:
+//   .env
+//   REACT_APP_API_URL=https://property-maintenance-pwa.onrender.com
+
 const API = process.env.REACT_APP_API_URL;
 
 // Helper to parse JSON and throw on HTTP errors
 async function handleResponse(res, defaultError) {
-  let body
+  let body;
   try {
-    body = await res.json()
+    body = await res.json();
   } catch {
-    throw new Error('Invalid JSON response from server')
+    // invalid JSON (e.g. HTML error page)
+    throw new Error('Invalid JSON response from server');
   }
   if (!res.ok) {
-    throw new Error(body.error || defaultError || `HTTP ${res.status}`)
+    throw new Error(body.error || defaultError || `HTTP ${res.status}`);
   }
-  return body
+  return body;
 }
 
 export async function register(data) {
@@ -21,8 +26,8 @@ export async function register(data) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
-  })
-  return handleResponse(res, 'Registration failed')
+  });
+  return handleResponse(res, 'Registration failed');
 }
 
 export async function login(data) {
@@ -30,13 +35,13 @@ export async function login(data) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
-  })
-  return handleResponse(res, 'Login failed')
+  });
+  return handleResponse(res, 'Login failed');
 }
 
 export async function getJobs() {
-  const res = await fetch(`${API}/api/jobs`)
-  return handleResponse(res, 'Could not fetch jobs')
+  const res = await fetch(`${API}/api/jobs`);
+  return handleResponse(res, 'Could not fetch jobs');
 }
 
 export async function createJob(formData) {
@@ -44,8 +49,8 @@ export async function createJob(formData) {
   const res = await fetch(`${API}/api/jobs`, {
     method: 'POST',
     body: formData,
-  })
-  return handleResponse(res, 'Job creation failed')
+  });
+  return handleResponse(res, 'Job creation failed');
 }
 
 export async function subscribe(planType, planTier) {
@@ -53,13 +58,13 @@ export async function subscribe(planType, planTier) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ planType, planTier }),
-  })
-  return handleResponse(res, 'Subscription failed')
+  });
+  return handleResponse(res, 'Subscription failed');
 }
 
 export async function getMessages(jobId) {
-  const res = await fetch(`${API}/api/messages/${jobId}`)
-  return handleResponse(res, 'Could not fetch messages')
+  const res = await fetch(`${API}/api/messages/${jobId}`);
+  return handleResponse(res, 'Could not fetch messages');
 }
 
 export async function sendMessage(jobId, message) {
@@ -67,8 +72,8 @@ export async function sendMessage(jobId, message) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message }),
-  })
-  return handleResponse(res, 'Message send failed')
+  });
+  return handleResponse(res, 'Message send failed');
 }
 
 export async function createBooking(jobId, details) {
@@ -76,41 +81,41 @@ export async function createBooking(jobId, details) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(details),
-  })
-  return handleResponse(res, 'Booking failed')
+  });
+  return handleResponse(res, 'Booking failed');
 }
 
 export async function payCallOutCharge(jobId) {
   const res = await fetch(`${API}/api/payments/callout/${jobId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-  })
-  return handleResponse(res, 'Payment of call‑out charge failed')
+  });
+  return handleResponse(res, 'Payment of call‑out charge failed');
 }
 
 // ---- Admin endpoints ----
 
 export async function getUsers() {
-  const res = await fetch(`${API}/api/admin/users`)
-  return handleResponse(res, 'Could not fetch users')
+  const res = await fetch(`${API}/api/admin/users`);
+  return handleResponse(res, 'Could not fetch users');
 }
 
 export async function getAllJobs() {
-  const res = await fetch(`${API}/api/admin/jobs`)
-  return handleResponse(res, 'Could not fetch all jobs')
+  const res = await fetch(`${API}/api/admin/jobs`);
+  return handleResponse(res, 'Could not fetch all jobs');
 }
 
 export async function getSubscriptions() {
-  const res = await fetch(`${API}/api/admin/subscriptions`)
-  return handleResponse(res, 'Could not fetch subscriptions')
+  const res = await fetch(`${API}/api/admin/subscriptions`);
+  return handleResponse(res, 'Could not fetch subscriptions');
 }
 
 export async function getDisputes() {
-  const res = await fetch(`${API}/api/admin/disputes`)
-  return handleResponse(res, 'Could not fetch disputes')
+  const res = await fetch(`${API}/api/admin/disputes`);
+  return handleResponse(res, 'Could not fetch disputes');
 }
 
 export async function getReviews() {
-  const res = await fetch(`${API}/api/admin/reviews`)
-  return handleResponse(res, 'Could not fetch reviews')
+  const res = await fetch(`${API}/api/admin/reviews`);
+  return handleResponse(res, 'Could not fetch reviews');
 }
