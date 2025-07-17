@@ -6,8 +6,7 @@ const path    = require('path');
 const Job     = require('../models/Job');
 const router  = express.Router();
 
-// ─── Multer storage setup ───────────────────────────────────────────────────
-
+// Multer disk‐storage for uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, '../uploads'));
@@ -18,8 +17,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// ─── GET all jobs (with poster flattened + tenant fields) ────────────────────
-
+// ── GET all jobs ─────────────────────────────────────────────────────────────
 router.get('/', async (req, res) => {
   try {
     const jobs = await Job.find()
@@ -29,27 +27,23 @@ router.get('/', async (req, res) => {
       )
       .sort({ createdAt: -1 });
 
-    const jobsWithAllInfo = jobs.map(job => {
+    // flatten out poster fields + leave tenantName/tenantPhone as-is
+    const out = jobs.map(job => {
       const j = job.toObject();
-
-      // flatten poster info
       j.posterName    = j.poster.fullName;
       j.posterPhone   = j.poster.phone;
       j.callOutCharge = j.poster.callOutCharge;
-
-      // tenantName & tenantPhone are already top-level from your schema
       return j;
     });
 
-    res.json(jobsWithAllInfo);
+    res.json(out);
   } catch (err) {
     console.error('Fetch jobs error:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// ─── POST a new job (with tenant & schedule info) ───────────────────────────
-
+// ── POST a new job ────────────────────────────────────────────────────────────
 router.post(
   '/',
   upload.array('media', 5),
@@ -66,8 +60,7 @@ router.post(
         scheduledFor
       } = req.body;
 
-      // req.user.id must come from your auth middleware
-      const poster = req.user.id;
+      const poster = req.user.id;  // from your auth middleware
 
       const media = req.files.map(f => `/uploads/${f.filename}`);
 
