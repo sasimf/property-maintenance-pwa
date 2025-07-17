@@ -1,12 +1,9 @@
-// server/routes/jobs.js
-
 const express = require('express');
 const multer  = require('multer');
 const path    = require('path');
 const Job     = require('../models/Job');
 const router  = express.Router();
 
-// Multer disk‐storage for uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, '../uploads'));
@@ -17,17 +14,12 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// ── GET all jobs ─────────────────────────────────────────────────────────────
 router.get('/', async (req, res) => {
   try {
     const jobs = await Job.find()
-      .populate(
-        'poster',
-        'fullName phone companyName userType callOutCharge'
-      )
+      .populate('poster', 'fullName phone callOutCharge')
       .sort({ createdAt: -1 });
 
-    // flatten out poster fields + leave tenantName/tenantPhone as-is
     const out = jobs.map(job => {
       const j = job.toObject();
       j.posterName    = j.poster.fullName;
@@ -43,7 +35,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// ── POST a new job ────────────────────────────────────────────────────────────
 router.post(
   '/',
   upload.array('media', 5),
@@ -60,7 +51,7 @@ router.post(
         scheduledFor
       } = req.body;
 
-      const poster = req.user.id;  // from your auth middleware
+      const poster = req.user.id;
 
       const media = req.files.map(f => `/uploads/${f.filename}`);
 

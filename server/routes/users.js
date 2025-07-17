@@ -4,7 +4,6 @@ const jwt       = require('jsonwebtoken');
 const User      = require('../models/User');
 const router    = express.Router();
 
-// POST /api/users/register
 router.post('/register', async (req, res) => {
   try {
     const {
@@ -44,7 +43,7 @@ router.post('/register', async (req, res) => {
       { id: user._id, userType: user.userType },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
-    );
+    ); 
 
     res.json({ token, userType: user.userType });
   } catch (err) {
