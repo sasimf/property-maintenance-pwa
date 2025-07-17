@@ -1,64 +1,107 @@
+// src/components/Auth/Register.js
 import React, { useState } from 'react';
-import { register } from '../../services/api';
+import { register as registerApi } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 
 export default function Register() {
-  const [form, setForm] = useState({
-    fullName: '',
-    companyName: '',
-    address: '',
-    postcode: '',
-    phone: '',
-    userType: 'homeowner',
-    email: '',
-    password: '',
-  });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [fullName, setFullName]           = useState('');
+  const [email, setEmail]                 = useState('');
+  const [password, setPassword]           = useState('');
+  const [userType, setUserType]           = useState('Homeowner');
+  const [companyName, setCompanyName]     = useState('');
+  const [address, setAddress]             = useState('');
+  const [postcode, setPostcode]           = useState('');
+  const [phone, setPhone]                 = useState('');
+  const [callOutCharge, setCallOutCharge] = useState('');
   const navigate = useNavigate();
-
-  const handleChange = e => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
 
   const handleSubmit = async e => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
-
+    const payload = {
+      fullName,
+      email,
+      password,
+      userType,
+      companyName: companyName || undefined,
+      address,
+      postcode,
+      phone,
+      // only include this for Contractor/Company:
+      ...( ['Contractor','Company'].includes(userType)
+         ? { callOutCharge: Number(callOutCharge) }
+         : {} )
+    };
     try {
-      await register(form);
+      await registerApi(payload);
       navigate('/login');
     } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      alert(err.message);
     }
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2>Register</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <input name="fullName" placeholder="Full Name" onChange={handleChange} required />
-      <input name="companyName" placeholder="Company (optional)" onChange={handleChange} />
-      <input name="address" placeholder="Address" onChange={handleChange} required />
-      <input name="postcode" placeholder="Postcode" onChange={handleChange} required />
-      <input name="phone" placeholder="Phone" onChange={handleChange} required />
+      <label>
+        Full Name
+        <input value={fullName} onChange={e=>setFullName(e.target.value)} required/>
+      </label>
 
-      <select name="userType" onChange={handleChange} value={form.userType}>
-        <option value="homeowner">Homeowner (Free)</option>
-        <option value="landlord">Landlord (Free)</option>
-        <option value="agent">Letting Agent (Paid)</option>
-        <option value="contractor">Contractor (Paid)</option>
-      </select>
+      <label>
+        Email
+        <input type="email" value={email} onChange={e=>setEmail(e.target.value)} required/>
+      </label>
 
-      <input type="email" name="email" placeholder="Email" onChange={handleChange} required />
-      <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
+      <label>
+        Password
+        <input type="password" value={password} onChange={e=>setPassword(e.target.value)} required/>
+      </label>
 
-      <button type="submit" disabled={loading}>
-        {loading ? 'Signing Up…' : 'Sign Up'}
-      </button>
+      <label>
+        User Type
+        <select value={userType} onChange={e=>setUserType(e.target.value)}>
+          <option>Homeowner</option>
+          <option>Landlord</option>
+          <option>LettingAgent</option>
+          <option>Contractor</option>
+          <option>Company</option>
+        </select>
+      </label>
+
+      {['Contractor','Company'].includes(userType) && (
+        <label>
+          Call-out Charge (£)
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            required
+            value={callOutCharge}
+            onChange={e=>setCallOutCharge(e.target.value)}
+          />
+        </label>
+      )}
+
+      <label>
+        Company Name (if applicable)
+        <input value={companyName} onChange={e=>setCompanyName(e.target.value)}/>
+      </label>
+
+      <label>
+        Address
+        <input value={address} onChange={e=>setAddress(e.target.value)} required/>
+      </label>
+
+      <label>
+        Postcode
+        <input value={postcode} onChange={e=>setPostcode(e.target.value)} required/>
+      </label>
+
+      <label>
+        Phone
+        <input value={phone} onChange={e=>setPhone(e.target.value)} required/>
+      </label>
+
+      <button type="submit">Register</button>
     </form>
   );
 }
