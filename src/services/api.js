@@ -31,13 +31,14 @@ export async function register(data) {
 }
 
 export async function login(data) {
-  const res = await fetch(`${API}/api/users/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  const res = await fetch(
+  "https://property‑maintenance‑pwa.onrender.com/api/users/login",
+  {
+    method: "POST",
+    headers: { "Content‑Type": "application/json" },
     body: JSON.stringify(data),
-  });
-  return handleResponse(res, 'Login failed');
-}
+  }
+);
 
 export async function getJobs() {
   const res = await fetch(`${API}/api/jobs`);
