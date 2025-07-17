@@ -1,68 +1,67 @@
-const express = require('express');
-const router = express.Router();
-const Booking = require('../models/Booking');
-const Job = require('../models/Job');
-const User = require('../models/User');
-const Message = require('../models/Message');
+// server/routes/bookings.js
+
+const express    = require('express');
+const router     = express.Router();
+const Booking    = require('../models/Booking');
+const Job        = require('../models/Job');
+const User       = require('../models/User');
 const nodemailer = require('nodemailer');
 
-// configure your SMTP settings via .env
+// configure your SMTP transporter (example uses Gmail)
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: true,
+  service: 'Gmail',
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
 router.post('/:jobId', async (req, res) => {
   try {
-    const { contractorId, callOutAmount } = req.body;
-    const job = await Job.findById(req.params.jobId).populate('poster');
-    if (!job) return res.status(404).json({ error: 'Job not found' });
+    const jobId   = req.params.jobId;
+    const { userId, amount } = req.body;
 
+    // Save booking record
     const booking = await Booking.create({
-      job: job._id,
-      contractor: contractorId,
-      paid: true,
-      callOutAmount
+      job:       jobId,
+      poster:    userId,
+      amountPaid: amount,
+      paidAt:    new Date()
     });
 
-    let systemUser = await User.findOne({ email: 'system@heydave.co.uk' });
-    if (!systemUser) {
-      systemUser = await User.create({
-        fullName: 'HeyDave.co.uk',
-        email: 'system@heydave.co.uk',
-        passwordHash: 'SYSTEM',
-        userType: 'System'
-      });
-    }
-    await Message.create({
-      job: job._id,
-      sender: systemUser._id,
-      message: 'Call-out charge has been paid. Please proceed to visit the job as arranged.'
+    // Update job status & populate contractor email/name
+    const job = await Job.findByIdAndUpdate(
+      jobId,
+      { status: 'CallOutPaid' },
+      { new: true }
+    ).populate('contractor', 'email fullName description');
+
+    // Send in‑app “HeyDave.co.uk” message
+    await fetch(`${process.env.BACKEND_URL}/api/messages/${jobId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: `HeyDave.co.uk: the £${amount} call‑out charge has been paid. Please visit as arranged.`
+      })
     });
 
-    const contractor = await User.findById(contractorId);
+    // Email the contractor
     await transporter.sendMail({
-      from: '"HeyDave.co.uk" <noreply@heydave.co.uk>',
-      to: contractor.email,
-      subject: 'Call-out Charge Paid – Please Visit Job',
+      from:    '"HeyDave.co.uk" <no-reply@heydave.co.uk>',
+      to:      job.contractor.email,
+      subject: 'Call‑out Charge Paid – Please Visit Job',
       text: `
-Hello ${contractor.fullName},
+Hi ${job.contractor.fullName},
 
-The call-out charge of £${callOutAmount.toFixed(2)} for Job "${job.description}" has been paid.
+Your call‑out charge of £${amount} has just been paid by the client for job "${job.description}".
+Please visit the property as per your arrangement.
 
-Please proceed with the visit as arranged with ${job.poster.fullName} (${job.poster.phone}).
-
-Thank you,
-HeyDave.co.uk
+Thanks,
+The HeyDave.co.uk Team
 `
     });
 
-    res.json({ success: true, bookingId: booking._id });
+    res.json({ booking, job });
   } catch (err) {
     console.error('Booking/payment error:', err);
     res.status(500).json({ error: err.message });
