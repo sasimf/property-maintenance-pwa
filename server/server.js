@@ -1,8 +1,8 @@
 require('dotenv').config();
 const express = require('express');
-const cors    = require('cors');
-const mongoose= require('mongoose');
-const path    = require('path');
+const cors = require('cors');
+const mongoose = require('mongoose');
+const path = require('path');
 
 const app = express();
 
@@ -28,9 +28,10 @@ mongoose.connect(process.env.MONGODB_URI, {
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-app.use('/api/users',     require('./routes/users'));
-app.use('/api/jobs',      require('./routes/jobs'));
-app.use('/api/messages',  require('./routes/messages'));
+app.use('/api/users', require('./routes/users'));
+app.use('/api/jobs', require('./routes/jobs'));
+app.use('/api/messages', require('./routes/messages'));
+app.use('/api/bookings', require('./routes/bookings'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
