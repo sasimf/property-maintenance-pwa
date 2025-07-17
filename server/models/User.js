@@ -14,8 +14,6 @@ const userSchema = new Schema({
   address:     String,
   postcode:    String,
   phone:       String,
-
-  // only required for Contractor/Company
   callOutCharge: {
     type: Number,
     required: function() {
@@ -23,7 +21,6 @@ const userSchema = new Schema({
     },
     default: 0
   },
-
   createdAt: { type: Date, default: Date.now }
 });
 
