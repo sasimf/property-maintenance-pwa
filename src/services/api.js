@@ -2,22 +2,27 @@
 
 const API = process.env.REACT_APP_API_URL;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// AUTH
-// ─────────────────────────────────────────────────────────────────────────────
+// Helper to parse JSON and throw on HTTP errors
+async function handleResponse(res, defaultError) {
+  let body
+  try {
+    body = await res.json()
+  } catch {
+    throw new Error('Invalid JSON response from server')
+  }
+  if (!res.ok) {
+    throw new Error(body.error || defaultError || `HTTP ${res.status}`)
+  }
+  return body
+}
 
 export async function register(data) {
   const res = await fetch(`${API}/api/users/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
-  });
-  if (!res.ok) {
-    let err = { error: 'Registration failed' };
-    try { err = await res.json(); } catch {}
-    throw new Error(err.error || err.message);
-  }
-  return res.json();
+  })
+  return handleResponse(res, 'Registration failed')
 }
 
 export async function login(data) {
@@ -25,65 +30,36 @@ export async function login(data) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
-  });
-  if (!res.ok) {
-    let err = { error: 'Login failed' };
-    try { err = await res.json(); } catch {}
-    throw new Error(err.error || err.message);
-  }
-  return res.json(); // expects { user, token }
+  })
+  return handleResponse(res, 'Login failed')
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// JOBS
-// ─────────────────────────────────────────────────────────────────────────────
 
 export async function getJobs() {
-  const res = await fetch(`${API}/api/jobs`);
-  if (!res.ok) throw new Error('Failed to fetch jobs');
-  return res.json();
+  const res = await fetch(`${API}/api/jobs`)
+  return handleResponse(res, 'Could not fetch jobs')
 }
 
-export async function createJob(data) {
-  // data should be a FormData instance for file uploads
+export async function createJob(formData) {
+  // formData should be a FormData instance containing media/files + other fields
   const res = await fetch(`${API}/api/jobs`, {
     method: 'POST',
-    body: data,
-  });
-  if (!res.ok) {
-    let err = { error: 'Job creation failed' };
-    try { err = await res.json(); } catch {}
-    throw new Error(err.error || err.message);
-  }
-  return res.json();
+    body: formData,
+  })
+  return handleResponse(res, 'Job creation failed')
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SUBSCRIPTIONS
-// ─────────────────────────────────────────────────────────────────────────────
 
 export async function subscribe(planType, planTier) {
   const res = await fetch(`${API}/api/subscriptions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ planType, planTier }),
-  });
-  if (!res.ok) {
-    let err = { error: 'Subscription failed' };
-    try { err = await res.json(); } catch {}
-    throw new Error(err.error || err.message);
-  }
-  return res.json();
+  })
+  return handleResponse(res, 'Subscription failed')
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MESSAGES
-// ─────────────────────────────────────────────────────────────────────────────
-
 export async function getMessages(jobId) {
-  const res = await fetch(`${API}/api/messages/${jobId}`);
-  if (!res.ok) throw new Error('Failed to load messages');
-  return res.json();
+  const res = await fetch(`${API}/api/messages/${jobId}`)
+  return handleResponse(res, 'Could not fetch messages')
 }
 
 export async function sendMessage(jobId, message) {
@@ -91,81 +67,50 @@ export async function sendMessage(jobId, message) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message }),
-  });
-  if (!res.ok) {
-    let err = { error: 'Send message failed' };
-    try { err = await res.json(); } catch {}
-    throw new Error(err.error || err.message);
-  }
-  return res.json();
+  })
+  return handleResponse(res, 'Message send failed')
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// BOOKINGS
-// ─────────────────────────────────────────────────────────────────────────────
 
 export async function createBooking(jobId, details) {
   const res = await fetch(`${API}/api/bookings/${jobId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(details),
-  });
-  if (!res.ok) {
-    let err = { error: 'Booking failed' };
-    try { err = await res.json(); } catch {}
-    throw new Error(err.error || err.message);
-  }
-  return res.json();
+  })
+  return handleResponse(res, 'Booking failed')
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ADMIN
-// ─────────────────────────────────────────────────────────────────────────────
-
-export async function getUsers() {
-  const res = await fetch(`${API}/api/admin/users`);
-  if (!res.ok) throw new Error('Failed to load users');
-  return res.json();
-}
-
-export async function getAllJobs() {
-  const res = await fetch(`${API}/api/admin/jobs`);
-  if (!res.ok) throw new Error('Failed to load all jobs');
-  return res.json();
-}
-
-export async function getSubscriptions() {
-  const res = await fetch(`${API}/api/admin/subscriptions`);
-  if (!res.ok) throw new Error('Failed to load subscriptions');
-  return res.json();
-}
-
-export async function getDisputes() {
-  const res = await fetch(`${API}/api/admin/disputes`);
-  if (!res.ok) throw new Error('Failed to load disputes');
-  return res.json();
-}
-
-export async function getReviews() {
-  const res = await fetch(`${API}/api/admin/reviews`);
-  if (!res.ok) throw new Error('Failed to load reviews');
-  return res.json();
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// PAY CALL-OUT CHARGE (example stub)
-// ─────────────────────────────────────────────────────────────────────────────
-
-export async function payCallOutCharge(jobId, amount) {
+export async function payCallOutCharge(jobId) {
   const res = await fetch(`${API}/api/payments/callout/${jobId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ amount }),
-  });
-  if (!res.ok) {
-    let err = { error: 'Payment failed' };
-    try { err = await res.json(); } catch {}
-    throw new Error(err.error || err.message);
-  }
-  return res.json();
+  })
+  return handleResponse(res, 'Payment of call‑out charge failed')
+}
+
+// ---- Admin endpoints ----
+
+export async function getUsers() {
+  const res = await fetch(`${API}/api/admin/users`)
+  return handleResponse(res, 'Could not fetch users')
+}
+
+export async function getAllJobs() {
+  const res = await fetch(`${API}/api/admin/jobs`)
+  return handleResponse(res, 'Could not fetch all jobs')
+}
+
+export async function getSubscriptions() {
+  const res = await fetch(`${API}/api/admin/subscriptions`)
+  return handleResponse(res, 'Could not fetch subscriptions')
+}
+
+export async function getDisputes() {
+  const res = await fetch(`${API}/api/admin/disputes`)
+  return handleResponse(res, 'Could not fetch disputes')
+}
+
+export async function getReviews() {
+  const res = await fetch(`${API}/api/admin/reviews`)
+  return handleResponse(res, 'Could not fetch reviews')
 }
