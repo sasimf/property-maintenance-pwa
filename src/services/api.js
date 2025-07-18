@@ -17,6 +17,7 @@ async function handleResponse(res, defaultError) {
 }
 
 export async function register(data) {
+  console.log('🔗 API base URL is:', API);
   const res = await fetch(`${API}/api/users/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
