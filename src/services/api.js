@@ -113,4 +113,3 @@ export async function getReviews() {
   const res = await fetch(`${API}/api/admin/reviews`);
   return handleResponse(res, 'Could not fetch reviews');
 }
-
