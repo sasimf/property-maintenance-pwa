@@ -1,7 +1,5 @@
 // src/services/api.js
 
-console.log('🔗 API base URL is:', API);
-
 const API = process.env.REACT_APP_API_URL;
 
 // Helper to parse JSON and throw on HTTP errors
