@@ -1,29 +1,28 @@
+// src/context/AuthContext.js
+
 import React, { createContext, useState, useEffect } from 'react';
 
-export const AuthContext = createContext();
+// 1) Create the context
+export const AuthContext = createContext({
+  user: null,
+  setUser: () => {}, 
+});
 
 export function AuthProvider({ children }) {
-  // On init, try to load user from localStorage
-  const [user, setUserState] = useState(() => {
-    const json = localStorage.getItem('pm_user');
-    return json ? JSON.parse(json) : null;
-  });
+  // keep the currently‐logged‐in user here
+  const [user, setUser] = useState(null);
 
-  // Wrap setter so we also persist to localStorage
-  const setUser = userObj => {
-    if (userObj) {
-      localStorage.setItem('pm_user', JSON.stringify(userObj));
-    } else {
-      localStorage.removeItem('pm_user');
+  // on mount, try to load from localStorage (optional)
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    if (token && storedUser) {
+      setUser(JSON.parse(storedUser));
     }
-    setUserState(userObj);
-  };
-
-  // Optional: clear user on logout
-  const logout = () => setUser(null);
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, logout }}>
+    <AuthContext.Provider value={{ user, setUser }}>
       {children}
     </AuthContext.Provider>
   );
