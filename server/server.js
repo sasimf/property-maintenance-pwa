@@ -38,4 +38,15 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const port = process.env.PORT || 5000;
+// catch‐all 404
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not Found' });
+});
+
+// global error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.status || 500).json({ error: err.message || 'Server Error' });
+});
+
 app.listen(port, () => console.log(`Server listening on port ${port}`));
